@@ -7,7 +7,6 @@ import Map from "@/components/Map";
 
 const Index = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [nextImageIndex, setNextImageIndex] = useState(1);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrollY, setScrollY] = useState(0);
@@ -50,62 +49,6 @@ const Index = () => {
     "Landscaped Gardens",
   ];
 
-  const nextImage = () => {
-    if (isTransitioning) return;
-    
-    setIsTransitioning(true);
-    const newIndex = (currentImageIndex + 1) % propertyImages.length;
-    setNextImageIndex(newIndex);
-    
-    setTimeout(() => {
-      setCurrentImageIndex(newIndex);
-      setIsTransitioning(false);
-    }, 800);
-  };
-
-  const prevImage = () => {
-    if (isTransitioning) return;
-    
-    setIsTransitioning(true);
-    const newIndex = (currentImageIndex - 1 + propertyImages.length) % propertyImages.length;
-    setNextImageIndex(newIndex);
-    
-    setTimeout(() => {
-      setCurrentImageIndex(newIndex);
-      setIsTransitioning(false);
-    }, 800);
-  };
-
-  const goToImage = (index: number) => {
-    if (isTransitioning || index === currentImageIndex) return;
-    
-    setIsTransitioning(true);
-    setNextImageIndex(index);
-    
-    setTimeout(() => {
-      setCurrentImageIndex(index);
-      setIsTransitioning(false);
-    }, 800);
-  };
-
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      setMobileMenuOpen(false);
-    }
-  };
-
-  // Auto-rotate images with improved timing
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!isTransitioning) {
-        nextImage();
-      }
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [currentImageIndex, isTransitioning]);
-
   const moreProperties = [
     {
       id: 1,
@@ -139,6 +82,60 @@ const Index = () => {
     }
   ];
 
+  const nextImage = () => {
+    if (isTransitioning) return;
+    
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % propertyImages.length);
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 100);
+    }, 400);
+  };
+
+  const prevImage = () => {
+    if (isTransitioning) return;
+    
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentImageIndex((prev) => (prev - 1 + propertyImages.length) % propertyImages.length);
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 100);
+    }, 400);
+  };
+
+  const goToImage = (index: number) => {
+    if (isTransitioning || index === currentImageIndex) return;
+    
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentImageIndex(index);
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 100);
+    }, 400);
+  };
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+      setMobileMenuOpen(false);
+    }
+  };
+
+  // Auto-rotate images
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!isTransitioning) {
+        nextImage();
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [currentImageIndex, isTransitioning]);
+
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -151,31 +148,16 @@ const Index = () => {
       {/* Hero Section */}
       <section className="relative h-screen overflow-hidden">
         <div className="absolute inset-0">
-          {/* Current Image */}
           <img
             src={propertyImages[currentImageIndex]}
             alt="Luxury Property"
-            className={`w-full h-full object-cover transition-all duration-1000 ease-in-out transform ${
-              isTransitioning ? 'scale-110 opacity-70' : 'scale-105 opacity-100'
+            className={`w-full h-full object-cover transition-all duration-700 ease-in-out transform ${
+              isTransitioning ? 'opacity-0 scale-110' : 'opacity-100 scale-105'
             }`}
             style={{
               transform: `translateY(${scrollY * 0.5}px) scale(${isTransitioning ? 1.1 : 1.05 - scrollY * 0.0001})`,
-              opacity: isTransitioning ? 0.7 : 1,
             }}
           />
-          
-          {/* Next Image (for crossfade effect) */}
-          {isTransitioning && (
-            <img
-              src={propertyImages[nextImageIndex]}
-              alt="Luxury Property"
-              className="absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-in-out transform scale-105 animate-fade-in"
-              style={{
-                transform: `translateY(${scrollY * 0.5}px) scale(${1.05 - scrollY * 0.0001})`,
-                animation: 'fadeIn 0.8s ease-in-out forwards',
-              }}
-            />
-          )}
           
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
         </div>
@@ -306,8 +288,6 @@ const Index = () => {
                   className={`w-4 h-4 rounded-full transition-all duration-500 ${
                     index === currentImageIndex 
                       ? "bg-amber-400 scale-125 shadow-lg shadow-amber-400/50" 
-                      : index === nextImageIndex && isTransitioning
-                      ? "bg-amber-300 scale-110"
                       : "bg-white/50 hover:bg-white/70 hover:scale-105"
                   } ${isTransitioning ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                 />
