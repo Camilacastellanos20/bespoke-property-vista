@@ -1,100 +1,170 @@
 
-import React, { useEffect, useRef, useState } from 'react';
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import React, { useEffect, useRef } from 'react';
 import { Card } from "@/components/ui/card";
+
+declare global {
+  interface Window {
+    google: any;
+    initMap: () => void;
+  }
+}
 
 const Map = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const [mapboxToken, setMapboxToken] = useState('');
-  const [showTokenInput, setShowTokenInput] = useState(true);
+  const mapRef = useRef<any>(null);
 
-  const initializeMap = async () => {
-    if (!mapContainer.current || !mapboxToken) return;
+  useEffect(() => {
+    const loadGoogleMaps = () => {
+      if (window.google) {
+        initializeMap();
+        return;
+      }
 
-    try {
-      const mapboxgl = await import('mapbox-gl');
-      await import('mapbox-gl/dist/mapbox-gl.css');
+      // Load Google Maps API
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyB5aKUxlSqIedNX9UV_LQmF0j0BHHvfxbQ&libraries=places`;
+      script.async = true;
+      script.defer = true;
+      script.onload = initializeMap;
+      document.head.appendChild(script);
+    };
 
-      mapboxgl.default.accessToken = mapboxToken;
-      
-      const map = new mapboxgl.default.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/light-v11',
-        center: [-118.6919, 34.0259], // Malibu coordinates
-        zoom: 12,
-        pitch: 45,
+    const initializeMap = () => {
+      if (!mapContainer.current || !window.google) return;
+
+      // Malibu coordinates
+      const malibuLocation = { lat: 34.0259, lng: -118.6919 };
+
+      // Initialize map
+      mapRef.current = new window.google.maps.Map(mapContainer.current, {
+        center: malibuLocation,
+        zoom: 13,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+        styles: [
+          {
+            featureType: "all",
+            elementType: "geometry.fill",
+            stylers: [{ weight: "2.00" }]
+          },
+          {
+            featureType: "all",
+            elementType: "geometry.stroke",
+            stylers: [{ color: "#9c9c9c" }]
+          },
+          {
+            featureType: "all",
+            elementType: "labels.text",
+            stylers: [{ visibility: "on" }]
+          },
+          {
+            featureType: "landscape",
+            elementType: "all",
+            stylers: [{ color: "#f2f2f2" }]
+          },
+          {
+            featureType: "landscape",
+            elementType: "geometry.fill",
+            stylers: [{ color: "#ffffff" }]
+          },
+          {
+            featureType: "poi",
+            elementType: "all",
+            stylers: [{ visibility: "off" }]
+          },
+          {
+            featureType: "road",
+            elementType: "all",
+            stylers: [{ saturation: -100 }, { lightness: 45 }]
+          },
+          {
+            featureType: "road.highway",
+            elementType: "all",
+            stylers: [{ visibility: "simplified" }]
+          },
+          {
+            featureType: "water",
+            elementType: "all",
+            stylers: [{ color: "#46bcec" }, { visibility: "on" }]
+          }
+        ]
       });
 
-      // Add a marker for the property
-      new mapboxgl.default.Marker({
-        color: '#d97706', // amber-600
-        scale: 1.2
-      })
-        .setLngLat([-118.6919, 34.0259])
-        .setPopup(new mapboxgl.default.Popup().setHTML('<h3>Villa Serenity</h3><p>Malibu, California</p>'))
-        .addTo(map);
+      // Add main property marker
+      new window.google.maps.Marker({
+        position: malibuLocation,
+        map: mapRef.current,
+        title: 'Villa Serenity',
+        icon: {
+          path: window.google.maps.SymbolPath.CIRCLE,
+          scale: 12,
+          fillColor: '#d97706',
+          fillOpacity: 1,
+          strokeColor: '#ffffff',
+          strokeWeight: 3
+        }
+      });
 
-      // Add nearby amenities markers
+      // Property info window
+      const propertyInfoWindow = new window.google.maps.InfoWindow({
+        content: '<div style="padding: 8px;"><h3 style="margin: 0 0 4px 0; color: #d97706;">Villa Serenity</h3><p style="margin: 0; color: #666;">Malibu, California</p></div>'
+      });
+
+      const propertyMarker = new window.google.maps.Marker({
+        position: malibuLocation,
+        map: mapRef.current,
+        title: 'Villa Serenity',
+        icon: {
+          path: window.google.maps.SymbolPath.CIRCLE,
+          scale: 12,
+          fillColor: '#d97706',
+          fillOpacity: 1,
+          strokeColor: '#ffffff',
+          strokeWeight: 3
+        }
+      });
+
+      propertyMarker.addListener('click', () => {
+        propertyInfoWindow.open(mapRef.current, propertyMarker);
+      });
+
+      // Nearby amenities
       const amenities = [
-        { name: 'Malibu Elementary School', coords: [-118.6950, 34.0280], type: 'school' },
-        { name: 'Whole Foods Market', coords: [-118.6890, 34.0240], type: 'supermarket' },
-        { name: 'Malibu Country Club', coords: [-118.6970, 34.0270], type: 'recreation' },
-        { name: 'Zuma Beach', coords: [-118.6800, 34.0150], type: 'beach' },
-        { name: 'Malibu Pier', coords: [-118.6760, 34.0360], type: 'landmark' }
+        { name: 'Malibu Elementary School', position: { lat: 34.0280, lng: -118.6950 }, type: 'school', color: '#059669' },
+        { name: 'Whole Foods Market', position: { lat: 34.0240, lng: -118.6890 }, type: 'supermarket', color: '#dc2626' },
+        { name: 'Malibu Country Club', position: { lat: 34.0270, lng: -118.6970 }, type: 'recreation', color: '#7c3aed' },
+        { name: 'Zuma Beach', position: { lat: 34.0150, lng: -118.6800 }, type: 'beach', color: '#0ea5e9' },
+        { name: 'Malibu Pier', position: { lat: 34.0360, lng: -118.6760 }, type: 'landmark', color: '#f59e0b' }
       ];
 
       amenities.forEach(amenity => {
-        const color = amenity.type === 'school' ? '#059669' : 
-                     amenity.type === 'supermarket' ? '#dc2626' :
-                     amenity.type === 'recreation' ? '#7c3aed' :
-                     amenity.type === 'beach' ? '#0ea5e9' : '#f59e0b';
-        
-        new mapboxgl.default.Marker({
-          color: color,
-          scale: 0.8
-        })
-          .setLngLat(amenity.coords)
-          .setPopup(new mapboxgl.default.Popup().setHTML(`<h4>${amenity.name}</h4><p>${amenity.type}</p>`))
-          .addTo(map);
+        const marker = new window.google.maps.Marker({
+          position: amenity.position,
+          map: mapRef.current,
+          title: amenity.name,
+          icon: {
+            path: window.google.maps.SymbolPath.CIRCLE,
+            scale: 8,
+            fillColor: amenity.color,
+            fillOpacity: 1,
+            strokeColor: '#ffffff',
+            strokeWeight: 2
+          }
+        });
+
+        const infoWindow = new window.google.maps.InfoWindow({
+          content: `<div style="padding: 8px;"><h4 style="margin: 0 0 4px 0; color: ${amenity.color};">${amenity.name}</h4><p style="margin: 0; color: #666; text-transform: capitalize;">${amenity.type}</p></div>`
+        });
+
+        marker.addListener('click', () => {
+          infoWindow.open(mapRef.current, marker);
+        });
       });
+    };
 
-      // Add navigation controls
-      map.addControl(new mapboxgl.default.NavigationControl(), 'top-right');
-
-      setShowTokenInput(false);
-    } catch (error) {
-      console.error('Error loading map:', error);
-    }
-  };
-
-  if (showTokenInput) {
-    return (
-      <Card className="p-6 bg-amber-50 border-amber-200">
-        <h3 className="text-lg font-semibold mb-4 text-amber-800">Map Configuration</h3>
-        <p className="text-sm text-amber-700 mb-4">
-          To display the map, please enter your Mapbox public token. 
-          Get one at <a href="https://mapbox.com/" target="_blank" rel="noopener noreferrer" className="underline">mapbox.com</a>
-        </p>
-        <div className="flex gap-2">
-          <Input
-            type="text"
-            placeholder="Enter your Mapbox public token"
-            value={mapboxToken}
-            onChange={(e) => setMapboxToken(e.target.value)}
-            className="flex-1"
-          />
-          <Button 
-            onClick={initializeMap}
-            disabled={!mapboxToken}
-            className="bg-amber-600 hover:bg-amber-700"
-          >
-            Load Map
-          </Button>
-        </div>
-      </Card>
-    );
-  }
+    loadGoogleMaps();
+  }, []);
 
   return (
     <div className="relative w-full h-96 rounded-lg overflow-hidden shadow-xl">
