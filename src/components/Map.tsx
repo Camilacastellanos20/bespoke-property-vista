@@ -16,9 +16,9 @@ const Map = () => {
       const mapboxgl = await import('mapbox-gl');
       await import('mapbox-gl/dist/mapbox-gl.css');
 
-      mapboxgl.accessToken = mapboxToken;
+      mapboxgl.default.accessToken = mapboxToken;
       
-      const map = new mapboxgl.Map({
+      const map = new mapboxgl.default.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
         center: [-118.6919, 34.0259], // Malibu coordinates
@@ -27,16 +27,40 @@ const Map = () => {
       });
 
       // Add a marker for the property
-      new mapboxgl.Marker({
+      new mapboxgl.default.Marker({
         color: '#d97706', // amber-600
         scale: 1.2
       })
         .setLngLat([-118.6919, 34.0259])
-        .setPopup(new mapboxgl.Popup().setHTML('<h3>Villa Serenity</h3><p>Malibu, California</p>'))
+        .setPopup(new mapboxgl.default.Popup().setHTML('<h3>Villa Serenity</h3><p>Malibu, California</p>'))
         .addTo(map);
 
+      // Add nearby amenities markers
+      const amenities = [
+        { name: 'Malibu Elementary School', coords: [-118.6950, 34.0280], type: 'school' },
+        { name: 'Whole Foods Market', coords: [-118.6890, 34.0240], type: 'supermarket' },
+        { name: 'Malibu Country Club', coords: [-118.6970, 34.0270], type: 'recreation' },
+        { name: 'Zuma Beach', coords: [-118.6800, 34.0150], type: 'beach' },
+        { name: 'Malibu Pier', coords: [-118.6760, 34.0360], type: 'landmark' }
+      ];
+
+      amenities.forEach(amenity => {
+        const color = amenity.type === 'school' ? '#059669' : 
+                     amenity.type === 'supermarket' ? '#dc2626' :
+                     amenity.type === 'recreation' ? '#7c3aed' :
+                     amenity.type === 'beach' ? '#0ea5e9' : '#f59e0b';
+        
+        new mapboxgl.default.Marker({
+          color: color,
+          scale: 0.8
+        })
+          .setLngLat(amenity.coords)
+          .setPopup(new mapboxgl.default.Popup().setHTML(`<h4>${amenity.name}</h4><p>${amenity.type}</p>`))
+          .addTo(map);
+      });
+
       // Add navigation controls
-      map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      map.addControl(new mapboxgl.default.NavigationControl(), 'top-right');
 
       setShowTokenInput(false);
     } catch (error) {
@@ -76,6 +100,29 @@ const Map = () => {
     <div className="relative w-full h-96 rounded-lg overflow-hidden shadow-xl">
       <div ref={mapContainer} className="absolute inset-0" />
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/10 to-transparent" />
+      
+      {/* Legend */}
+      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm p-3 rounded-lg shadow-lg">
+        <h4 className="text-sm font-semibold mb-2">Nearby Amenities</h4>
+        <div className="space-y-1 text-xs">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-emerald-600 rounded-full"></div>
+            <span>Schools</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-red-600 rounded-full"></div>
+            <span>Shopping</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-purple-600 rounded-full"></div>
+            <span>Recreation</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-sky-600 rounded-full"></div>
+            <span>Beach</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

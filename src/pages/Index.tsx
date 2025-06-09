@@ -63,6 +63,39 @@ const Index = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const moreProperties = [
+    {
+      id: 1,
+      title: "Ocean Vista Estate",
+      location: "Manhattan Beach, CA",
+      price: "$12.5M",
+      beds: 6,
+      baths: 5,
+      sqft: "5,200",
+      image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+    },
+    {
+      id: 2,
+      title: "Cliffside Sanctuary",
+      location: "Big Sur, CA",
+      price: "$15.8M",
+      beds: 4,
+      baths: 4,
+      sqft: "4,800",
+      image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+    },
+    {
+      id: 3,
+      title: "Modern Architectural Marvel",
+      location: "Beverly Hills, CA",
+      price: "$22.3M",
+      beds: 7,
+      baths: 8,
+      sqft: "6,500",
+      image: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -117,6 +150,13 @@ const Index = () => {
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-400 transition-all duration-300 group-hover:w-full"></span>
               </button>
               <button 
+                onClick={() => scrollToSection('more-properties')}
+                className="hover:text-amber-400 transition-all duration-300 relative group"
+              >
+                More Properties
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-400 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button 
                 onClick={() => scrollToSection('contact')}
                 className="hover:text-amber-400 transition-all duration-300 relative group"
               >
@@ -142,6 +182,7 @@ const Index = () => {
                 <button onClick={() => scrollToSection('features')} className="text-left hover:text-amber-400 transition-colors">Features</button>
                 <button onClick={() => scrollToSection('gallery')} className="text-left hover:text-amber-400 transition-colors">Gallery</button>
                 <button onClick={() => scrollToSection('location')} className="text-left hover:text-amber-400 transition-colors">Location</button>
+                <button onClick={() => scrollToSection('more-properties')} className="text-left hover:text-amber-400 transition-colors">More Properties</button>
                 <button onClick={() => scrollToSection('contact')} className="text-left hover:text-amber-400 transition-colors">Contact</button>
               </div>
             </div>
@@ -392,6 +433,90 @@ const Index = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* More Properties Section */}
+      <section id="more-properties" className="py-32 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-6xl mx-auto px-8">
+          <div className="text-center mb-20">
+            <Badge className="mb-6 bg-amber-100 text-amber-800 border-amber-200">
+              SIMILAR PROPERTIES
+            </Badge>
+            <h2 className="text-4xl md:text-6xl font-thin mb-8 tracking-wide">
+              More Luxury
+              <span className="block font-bold text-amber-600">Estates</span>
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Discover other exceptional properties in our exclusive portfolio of luxury coastal estates.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {moreProperties.map((property) => (
+              <Card key={property.id} className="group overflow-hidden hover:shadow-2xl transition-all duration-700 border-0 shadow-lg hover:-translate-y-2">
+                <div className="relative overflow-hidden">
+                  <img
+                    src={property.image}
+                    alt={property.title}
+                    className="w-full h-64 object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                  <div className="absolute top-4 right-4">
+                    <Badge className="bg-amber-600 text-white border-none">
+                      EXCLUSIVE
+                    </Badge>
+                  </div>
+                  <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
+                    <p className="text-2xl font-bold">{property.price}</p>
+                  </div>
+                </div>
+                
+                <div className="p-6">
+                  <h3 className="text-xl font-bold mb-2 group-hover:text-amber-600 transition-colors duration-300">
+                    {property.title}
+                  </h3>
+                  <p className="text-muted-foreground mb-4 flex items-center">
+                    <MapPin className="w-4 h-4 mr-1" />
+                    {property.location}
+                  </p>
+                  
+                  <div className="flex justify-between items-center text-sm text-muted-foreground">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center">
+                        <Bed className="w-4 h-4 mr-1" />
+                        <span>{property.beds}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Bath className="w-4 h-4 mr-1" />
+                        <span>{property.baths}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Square className="w-4 h-4 mr-1" />
+                        <span>{property.sqft} ft²</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    className="w-full mt-4 bg-amber-600 hover:bg-amber-700 text-white transform hover:scale-105 transition-all duration-300"
+                  >
+                    VIEW DETAILS
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+          
+          <div className="text-center mt-12">
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="border-amber-600 text-amber-600 hover:bg-amber-50 px-12 py-6 text-lg font-medium"
+            >
+              VIEW ALL PROPERTIES
+            </Button>
           </div>
         </div>
       </section>
