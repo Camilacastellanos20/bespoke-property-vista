@@ -1,12 +1,20 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, MapPin, Home, Car, Wifi, Mountain, Bath, Bed, Square } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Home, Car, Wifi, Mountain, Bath, Bed, Square, Menu, X } from "lucide-react";
+import Map from "@/components/Map";
 
 const Index = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const propertyImages = [
     "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
@@ -41,6 +49,20 @@ const Index = () => {
     setCurrentImageIndex((prev) => (prev - 1 + propertyImages.length) % propertyImages.length);
   };
 
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+      setMobileMenuOpen(false);
+    }
+  };
+
+  // Auto-rotate images
+  useEffect(() => {
+    const interval = setInterval(nextImage, 6000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -49,67 +71,127 @@ const Index = () => {
           <img
             src={propertyImages[currentImageIndex]}
             alt="Luxury Property"
-            className="w-full h-full object-cover transition-all duration-1000"
+            className="w-full h-full object-cover transition-all duration-1000 ease-in-out transform scale-105 hover:scale-100"
+            style={{
+              transform: `translateY(${scrollY * 0.5}px) scale(${1.05 - scrollY * 0.0001})`,
+            }}
           />
-          <div className="absolute inset-0 bg-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
         </div>
         
         <div className="relative z-10 h-full flex flex-col justify-between">
-          {/* Navigation */}
-          <nav className="flex justify-between items-center p-8">
+          {/* Enhanced Navigation */}
+          <nav className="flex justify-between items-center p-8 backdrop-blur-sm bg-white/5 border-b border-white/10">
             <div className="text-white text-2xl font-bold tracking-wide">
               VILLA SERENITY
             </div>
+            
+            {/* Desktop Menu */}
             <div className="hidden md:flex space-x-8 text-white">
-              <a href="#gallery" className="hover:text-amber-400 transition-colors">Gallery</a>
-              <a href="#features" className="hover:text-amber-400 transition-colors">Features</a>
-              <a href="#details" className="hover:text-amber-400 transition-colors">Details</a>
-              <a href="#contact" className="hover:text-amber-400 transition-colors">Contact</a>
+              <button 
+                onClick={() => scrollToSection('overview')}
+                className="hover:text-amber-400 transition-all duration-300 relative group"
+              >
+                Overview
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-400 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button 
+                onClick={() => scrollToSection('features')}
+                className="hover:text-amber-400 transition-all duration-300 relative group"
+              >
+                Features
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-400 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button 
+                onClick={() => scrollToSection('gallery')}
+                className="hover:text-amber-400 transition-all duration-300 relative group"
+              >
+                Gallery
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-400 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button 
+                onClick={() => scrollToSection('location')}
+                className="hover:text-amber-400 transition-all duration-300 relative group"
+              >
+                Location
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-400 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button 
+                onClick={() => scrollToSection('contact')}
+                className="hover:text-amber-400 transition-all duration-300 relative group"
+              >
+                Contact
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-400 transition-all duration-300 group-hover:w-full"></span>
+              </button>
             </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              className="md:hidden text-white p-2"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </nav>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="absolute top-20 left-0 right-0 bg-black/90 backdrop-blur-md p-6 md:hidden z-50">
+              <div className="flex flex-col space-y-4 text-white">
+                <button onClick={() => scrollToSection('overview')} className="text-left hover:text-amber-400 transition-colors">Overview</button>
+                <button onClick={() => scrollToSection('features')} className="text-left hover:text-amber-400 transition-colors">Features</button>
+                <button onClick={() => scrollToSection('gallery')} className="text-left hover:text-amber-400 transition-colors">Gallery</button>
+                <button onClick={() => scrollToSection('location')} className="text-left hover:text-amber-400 transition-colors">Location</button>
+                <button onClick={() => scrollToSection('contact')} className="text-left hover:text-amber-400 transition-colors">Contact</button>
+              </div>
+            </div>
+          )}
 
           {/* Hero Content */}
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center text-white max-w-4xl mx-auto px-8">
-              <Badge className="mb-4 bg-amber-600/90 text-white border-none">
+              <Badge className="mb-6 bg-amber-600/90 text-white border-none animate-pulse">
                 EXCLUSIVE LISTING
               </Badge>
-              <h1 className="text-5xl md:text-7xl font-light mb-6 tracking-wide">
+              <h1 className="text-5xl md:text-7xl font-thin mb-8 tracking-wider leading-tight">
                 OCEANFRONT
-                <span className="block font-bold">ELEGANCE</span>
+                <span className="block font-bold bg-gradient-to-r from-white to-amber-200 bg-clip-text text-transparent">
+                  ELEGANCE
+                </span>
               </h1>
-              <p className="text-xl md:text-2xl mb-8 text-gray-200 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-xl md:text-2xl mb-8 text-gray-200 max-w-2xl mx-auto leading-relaxed font-light">
                 Experience unparalleled luxury in this architectural masterpiece overlooking the Pacific Ocean
               </p>
               <div className="flex items-center justify-center mb-8 text-lg">
                 <MapPin className="w-5 h-5 mr-2 text-amber-400" />
-                <span>Malibu, California</span>
+                <span className="font-light">Malibu, California</span>
               </div>
               <Button 
                 size="lg" 
-                className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-6 text-lg font-medium tracking-wide"
+                className="bg-amber-600 hover:bg-amber-700 text-white px-12 py-6 text-lg font-light tracking-wider transform hover:scale-105 transition-all duration-300 shadow-2xl"
+                onClick={() => scrollToSection('overview')}
               >
                 EXPLORE PROPERTY
               </Button>
             </div>
           </div>
 
-          {/* Image Navigation */}
+          {/* Enhanced Image Navigation */}
           <div className="flex justify-between items-center p-8">
             <button
               onClick={prevImage}
-              className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-3 rounded-full transition-all"
+              className="bg-white/10 backdrop-blur-md hover:bg-white/20 text-white p-4 rounded-full transition-all duration-300 transform hover:scale-110 shadow-lg"
             >
               <ChevronLeft className="w-6 h-6" />
             </button>
             
-            <div className="flex space-x-2">
+            <div className="flex space-x-3">
               {propertyImages.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentImageIndex(index)}
-                  className={`w-3 h-3 rounded-full transition-all ${
-                    index === currentImageIndex ? "bg-amber-400" : "bg-white/50"
+                  className={`w-4 h-4 rounded-full transition-all duration-300 ${
+                    index === currentImageIndex ? "bg-amber-400 scale-125" : "bg-white/50 hover:bg-white/70"
                   }`}
                 />
               ))}
@@ -117,7 +199,7 @@ const Index = () => {
 
             <button
               onClick={nextImage}
-              className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-3 rounded-full transition-all"
+              className="bg-white/10 backdrop-blur-md hover:bg-white/20 text-white p-4 rounded-full transition-all duration-300 transform hover:scale-110 shadow-lg"
             >
               <ChevronRight className="w-6 h-6" />
             </button>
@@ -126,7 +208,7 @@ const Index = () => {
       </section>
 
       {/* Property Overview */}
-      <section className="py-20 px-8">
+      <section id="overview" className="py-32 px-8 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
@@ -173,26 +255,26 @@ const Index = () => {
       </section>
 
       {/* Key Features */}
-      <section id="features" className="py-20 bg-gray-50">
+      <section id="features" className="py-32 bg-white">
         <div className="max-w-6xl mx-auto px-8">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-amber-100 text-amber-800 border-amber-200">
+          <div className="text-center mb-20">
+            <Badge className="mb-6 bg-amber-100 text-amber-800 border-amber-200">
               PROPERTY FEATURES
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-light mb-6">
+            <h2 className="text-4xl md:text-6xl font-thin mb-8 tracking-wide">
               Exceptional
-              <span className="block font-bold">Living Spaces</span>
+              <span className="block font-bold text-amber-600">Living Spaces</span>
             </h2>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="p-6 text-center hover:shadow-lg transition-shadow border-0 shadow-md">
-                <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <feature.icon className="w-8 h-8 text-amber-600" />
+              <Card key={index} className="p-8 text-center hover:shadow-2xl transition-all duration-500 border-0 shadow-lg group hover:-translate-y-2">
+                <div className="w-20 h-20 bg-gradient-to-br from-amber-100 to-amber-200 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <feature.icon className="w-10 h-10 text-amber-600" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground text-sm">{feature.description}</p>
+                <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{feature.description}</p>
               </Card>
             ))}
           </div>
@@ -200,8 +282,8 @@ const Index = () => {
       </section>
 
       {/* Amenities */}
-      <section className="py-20">
-        <div className="max-w-6xl mx-auto px-8">
+      <section className="py-32 bg-gray-50">
+        <div className="max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="relative">
               <img
@@ -235,35 +317,87 @@ const Index = () => {
       </section>
 
       {/* Gallery Preview */}
-      <section id="gallery" className="py-20 bg-gray-50">
+      <section id="gallery" className="py-32 bg-white">
         <div className="max-w-6xl mx-auto px-8">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-amber-100 text-amber-800 border-amber-200">
+          <div className="text-center mb-20">
+            <Badge className="mb-6 bg-amber-100 text-amber-800 border-amber-200">
               VISUAL TOUR
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-light mb-6">
+            <h2 className="text-4xl md:text-6xl font-thin mb-8 tracking-wide">
               Immersive
-              <span className="block font-bold">Experience</span>
+              <span className="block font-bold text-amber-600">Experience</span>
             </h2>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {propertyImages.slice(0, 6).map((image, index) => (
-              <div key={index} className="relative group overflow-hidden rounded-lg shadow-lg">
+              <div key={index} className="relative group overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-500">
                 <img
                   src={image}
                   alt={`Property View ${index + 1}`}
-                  className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="w-full h-80 object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0">
+                  <p className="font-semibold">Property View {index + 1}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
+      {/* Location Section */}
+      <section id="location" className="py-32 bg-gray-50">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-20">
+            <Badge className="mb-6 bg-amber-100 text-amber-800 border-amber-200">
+              PRIME LOCATION
+            </Badge>
+            <h2 className="text-4xl md:text-6xl font-thin mb-8 tracking-wide">
+              Malibu's
+              <span className="block font-bold text-amber-600">Finest Address</span>
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Nestled along the pristine coastline of Malibu, this exclusive property offers unparalleled access to California's most coveted beaches and lifestyle amenities.
+            </p>
+          </div>
+          
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <Map />
+            </div>
+            <div className="space-y-8">
+              <div className="space-y-6">
+                <div className="flex items-start space-x-4">
+                  <div className="w-3 h-3 bg-amber-600 rounded-full mt-2 flex-shrink-0"></div>
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2">Beach Access</h3>
+                    <p className="text-muted-foreground">Private pathway to pristine sandy beaches with world-class surfing and sunset views.</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-4">
+                  <div className="w-3 h-3 bg-amber-600 rounded-full mt-2 flex-shrink-0"></div>
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2">Nearby Attractions</h3>
+                    <p className="text-muted-foreground">Minutes from Malibu Country Club, fine dining, and luxury shopping destinations.</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-4">
+                  <div className="w-3 h-3 bg-amber-600 rounded-full mt-2 flex-shrink-0"></div>
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2">Transportation</h3>
+                    <p className="text-muted-foreground">Easy access to LAX airport and downtown Los Angeles via Pacific Coast Highway.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Contact Section */}
-      <section id="contact" className="py-20">
+      <section id="contact" className="py-32 bg-gradient-to-b from-white to-gray-50">
         <div className="max-w-4xl mx-auto px-8 text-center">
           <Badge className="mb-4 bg-amber-100 text-amber-800 border-amber-200">
             EXCLUSIVE OPPORTUNITY
